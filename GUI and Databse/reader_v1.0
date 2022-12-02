@@ -1,0 +1,9 @@
+import numpy as np
+import csv
+
+with open("dummy1.csv","r") as data1:
+    dataReader = reader(data1)
+    for i in file_reader:
+        db[i] = list(i)
+
+print(db)
