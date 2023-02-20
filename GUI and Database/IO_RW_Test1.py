@@ -33,3 +33,5 @@ plt.scatter(database['Time'],database['Value'])
 canvas1 = FigureCanvasTkAgg(fig1,root)
 canvas1.draw()
 canvas1.pack(side='top')
+
+root.mainloop()
