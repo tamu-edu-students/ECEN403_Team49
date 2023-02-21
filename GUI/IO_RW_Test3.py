@@ -77,7 +77,7 @@ database = pd.DataFrame(data= d)
 
 fig1,ax1 = plt.subplots()
 fig1.set_size_inches(5,4)
-fig1.set_dpi(120)
+fig1.set_dpi(80)
 ax1.plot(range(10),database['Value'])
 ax1.autoscale(False)
 ax1.set_title("Charge Side Voltage")
@@ -88,7 +88,7 @@ ax1.set_ylabel("Voltage [V]")
 #plt2.scatter(range(50),range(50))
 
 graphFrame = Frame(master=root)
-graphFrame.pack(side= TOP)
+graphFrame.pack(side= LEFT)
 
 
 canvas1 = FigureCanvasTkAgg(fig1,graphFrame)
@@ -106,7 +106,7 @@ imgBattery = PhotoImage(file='battery.png',master=root)
 imgBattery = imgBattery.subsample(3,3)
 
 measureFrame = Frame(master= root)
-measureFrame.pack(side= BOTTOM)
+measureFrame.pack(side= RIGHT)
 
 Label(measureFrame,font=(18), textvariable = PowerText,fg="black").grid(column=1,row=5)
 Label(measureFrame,font=(18), textvariable = ChargeText,fg="black").grid(column=3,row=5)
