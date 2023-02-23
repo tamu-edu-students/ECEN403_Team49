@@ -44,10 +44,10 @@ def regen():
         if count % 20 == 0:
 
             database = database.shift(-1)
-            database.loc[9] = [cV]
+            database.loc[9] = [cV,cI]
 
             ax1.cla()
-            ax1.plot(range(10),database['Value'])
+            ax1.plot(range(10),database['Value'],database['Current'])
             ax1.set_ylim(0,4)
             ax1.set_title("Charge Side Voltage")
             ax1.set_ylabel("Voltage [V]")
@@ -72,13 +72,13 @@ root.title("MCU to Graph Test")
 
 #tk.Label(master= root, text= 'Below should be the updating graph:').pack()
 
-d = {'Value':[0,0,0,0,0,0,0,0,0,0]}
+d = {'Value':[0,0,0,0,0,0,0,0,0,0],'Current':[0,0,0,0,0,0,0,0,0,0]}
 database = pd.DataFrame(data= d)
 
 fig1,ax1 = plt.subplots()
 fig1.set_size_inches(5,4)
 fig1.set_dpi(80)
-ax1.plot(range(10),database['Value'])
+ax1.plot(range(10),database['Value'],database['Current'])
 ax1.autoscale(False)
 ax1.set_title("Charge Side Voltage")
 ax1.set_ylabel("Voltage [V]")
