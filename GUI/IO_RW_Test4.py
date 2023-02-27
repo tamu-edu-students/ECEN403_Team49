@@ -89,7 +89,7 @@ def regen():
             ax2.set_ylim(0,4)
             ax2.set_title("Discharge Side Voltage")
             ax2.set_ylabel("Voltage [V]")
-            canvas1.draw()
+            canvas2.draw()
 
             PowerText.set(cP)
             ChargeText.set("24 %")
@@ -151,12 +151,12 @@ canvas2.get_tk_widget().pack(side= BOTTOM)
 PowerText = StringVar(root,"0")
 ChargeText = StringVar(root,"0")
 
-#imgPanel = PhotoImage(file='panel.png',master=root)
-#imgPanel = imgPanel.subsample(1,1)
-#imgArrow = PhotoImage(file='arrow.png',master=root)
-#imgArrow = imgArrow.subsample(20,20)
-#imgBattery = PhotoImage(file='battery.png',master=root)
-#imgBattery = imgBattery.subsample(3,3)
+imgPanel = PhotoImage(file='panel.png',master=root)
+imgPanel = imgPanel.subsample(1,1)
+imgArrow = PhotoImage(file='arrow.png',master=root)
+imgArrow = imgArrow.subsample(20,20)
+imgBattery = PhotoImage(file='battery.png',master=root)
+imgBattery = imgBattery.subsample(3,3)
 
 measureFrame = Frame(master= tabDat)
 measureFrame.pack(side= RIGHT)
@@ -167,28 +167,28 @@ Label(measureFrame,font=(18), textvariable = ChargeText,fg="black").grid(column=
 Label(measureFrame,font=(18),text= "Charge-side Power [W]").grid(column=1,row=4)
 Label(measureFrame,font=(18),text= "Battery Charge [%]").grid(column=3,row=4)
 
-#Label(master= measureFrame,image=imgPanel).grid(column = 1, row = 3)
-#Label(master= measureFrame,image=imgArrow).grid(column = 2, row = 3)
-#Label(master= measureFrame,image=imgBattery).grid(column = 3, row = 3)
+Label(master= measureFrame,image=imgPanel).grid(column = 1, row = 3)
+Label(master= measureFrame,image=imgArrow).grid(column = 2, row = 3)
+Label(master= measureFrame,image=imgBattery).grid(column = 3, row = 3)
 
 
 # ----------------- Control Tab ----------------
 Label(tabCtl, text='Here we display our control functionality').grid(column=0, row=0, padx=10, pady=10)
 
 ## Include State Icons
-# imgFixed = PhotoImage(file='panelFixed.png',master=tabCtl)
-# imgFixed = imgFixed.subsample(2,2)
-# imgFree = PhotoImage(file='panelFree.png',master=tabCtl)
-# imgFree = imgFree.subsample(2,2)
-# imageAngle = Label(master= tabCtl,image=imgFixed)
-# imageAngle.grid(column = 2, row = 1)
+imgFixed = PhotoImage(file='panelFixed.png',master=tabCtl)
+imgFixed = imgFixed.subsample(2,2)
+imgFree = PhotoImage(file='panelFree.png',master=tabCtl)
+imgFree = imgFree.subsample(2,2)
+imageAngle = Label(master= tabCtl,image=imgFixed)
+imageAngle.grid(column = 2, row = 1)
 
-# imgChar = PhotoImage(file='modeC.png',master=tabCtl)
-# imgChar = imgChar.subsample(2,2)
-# imgDis = PhotoImage(file='modeD.png',master=tabCtl)
-# imgDis = imgDis.subsample(2,2)
-# imageMode = Label(master= tabCtl,image=imgChar)
-# imageMode.grid(column = 2, row = 2)
+imgChar = PhotoImage(file='modeC.png',master=tabCtl)
+imgChar = imgChar.subsample(2,2)
+imgDis = PhotoImage(file='modeD.png',master=tabCtl)
+imgDis = imgDis.subsample(2,2)
+imageMode = Label(master= tabCtl,image=imgChar)
+imageMode.grid(column = 2, row = 2)
 
 ## Change axis state 
 modeText1 = StringVar(tabCtl,"Press to initialize sysetm.")
@@ -200,12 +200,12 @@ def switchFree():
 
     if isFree:
         modeText1.set("The system is in fixed-axis mode")
-        #imageAngle.configure(image= imgFixed)
+        imageAngle.configure(image= imgFixed)
         isFree = False
 
     else:
         modeText1.set("The system is in free-axis mode")
-        #imageAngle.configure(image= imgFree)
+        imageAngle.configure(image= imgFree)
         isFree = True
 
 Button(tabCtl, command=switchFree, text="Change Axis Mode").grid(column=1,row=1,pady = 50)
@@ -227,14 +227,14 @@ def switchMode():
         GPIO.output(charFET,GPIO.HIGH) #Turn on charge-side FET
         GPIO.output(disFET,GPIO.LOW) #Turn off discharge-side FET
         modeText2.set("The system is being charged by the solar panel")
-        #imageMode.configure(image= imgChar)
+        imageMode.configure(image= imgChar)
         isMode = 0
 
     else: #If sytem is in state 0 (charging), change to state 1 (discharging)
         GPIO.output(charFET,GPIO.LOW) #Turn off charge-side FET
         GPIO.output(disFET,GPIO.HIGH) #Turn on discharge-side FET
         modeText2.set("The system is discharging power to the load")
-        #imageMode.configure(image= imgDis)
+        imageMode.configure(image= imgDis)
         isMode = 1
 
 Button(tabCtl, command=switchMode, text="Change Charging Mode").grid(column=1,row=2,pady = 50)
