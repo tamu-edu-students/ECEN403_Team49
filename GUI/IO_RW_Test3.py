@@ -19,6 +19,19 @@ import time
 import RPi.GPIO as GPIO
 
 adc = MCP3008()
+thread_running = True
+
+def getInput():
+    while True:
+        t = time.localtime()
+        cV = (adc.read(channel=0)) * (5.21/1023.0)
+        cI = (adc.read(channel=1)) * (5.21/1023.0)
+        cP = cV * cI
+        dV = (adc.read(channel=2)) * (5.21/1023.0)
+        dI = (adc.read(channel=3)) * (5.21/1023.0)
+        dP = dV * dI
+
+        root.update()
 
 def regen():
     count = 0
@@ -30,16 +43,16 @@ def regen():
 
     while True:
         time.sleep(0.05)
-        root.update()
+        #root.update()
         count += 1
 
-        t = time.localtime()
-        cV = (adc.read(channel=0)) * (5.21/1023.0)
-        cI = (adc.read(channel=1)) * (5.21/1023.0)
-        cP = cV * cI
-        dV = (adc.read(channel=2)) * (5.21/1023.0)
-        dI = (adc.read(channel=3)) * (5.21/1023.0)
-        dP = dV * dI
+    #     t = time.localtime()
+    #     cV = (adc.read(channel=0)) * (5.21/1023.0)
+    #     cI = (adc.read(channel=1)) * (5.21/1023.0)
+    #     cP = cV * cI
+    #     dV = (adc.read(channel=2)) * (5.21/1023.0)
+    #     dI = (adc.read(channel=3)) * (5.21/1023.0)
+    #     dP = dV * dI
 
         if count % 20 == 0:
 
@@ -65,6 +78,9 @@ def regen():
             count = 0
         
         root.update()
+
+
+
             
         
 root = Tk()
@@ -119,6 +135,9 @@ Label(master= measureFrame,image=imgArrow).grid(column = 2, row = 3)
 Label(master= measureFrame,image=imgBattery).grid(column = 3, row = 3)
 
 ##Enter LOOP
+
+t1 = Thread(target = regen)
+t2 = 
 root.after(0,regen)
 
 root.mainloop()
