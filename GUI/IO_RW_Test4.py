@@ -12,11 +12,11 @@ import matplotlib.pyplot as plt
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 
-from MCP3008 import MCP3008
+#from MCP3008 import MCP3008
 import time
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 
-adc = MCP3008()
+#adc = MCP3008()
 
 cV = 0
 cI = 0
@@ -37,23 +37,30 @@ disFET = 13
 def setup():
     print ("Setting up GPIO pins....")
 
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(charFET,GPIO.OUT) #Setup charge side PFET gpio
-    GPIO.output(charFET, GPIO.LOW) #Initialize charge PFET to OFF
-    GPIO.setup(disFET,GPIO.OUT) #Setup discharge side PFET gpio
-    GPIO.output(disFET, GPIO.LOW) #Initialize discharge PFET to OFF
+    #GPIO.setmode(GPIO.BOARD)
+    #GPIO.setup(charFET,GPIO.OUT) #Setup charge side PFET gpio
+    #GPIO.output(charFET, GPIO.LOW) #Initialize charge PFET to OFF
+    #GPIO.setup(disFET,GPIO.OUT) #Setup discharge side PFET gpio
+    #GPIO.output(disFET, GPIO.LOW) #Initialize discharge PFET to OFF
 
 def getInput():
 
     global cV,cI,cP,dV,dI,dP
 
     while True:
-        t = time.localtime()
-        cV = (adc.read(channel=0)) * (5.21/1023.0)
-        cI = (adc.read(channel=1)) * (5.21/1023.0)
+        # t = time.localtime()
+        # cV = (adc.read(channel=0)) * (5.21/1023.0)
+        # cI = (adc.read(channel=1)) * (5.21/1023.0)
+        # cP = cV * cI
+        # dV = (adc.read(channel=3)) * (5.21/1023.0)
+        # dI = (adc.read(channel=4)) * (5.21/1023.0)
+        # dP = dV * dI
+
+        cV = random.randint(0,2)
+        cI = random.randint(0,2)
         cP = cV * cI
-        dV = (adc.read(channel=3)) * (5.21/1023.0)
-        dI = (adc.read(channel=4)) * (5.21/1023.0)
+        dV = random.randint(0,2)
+        dI = random.randint(0,2)
         dP = dV * dI
 
         root.update()
@@ -78,14 +85,14 @@ def regen():
             database.loc[9] = [cV,cI,dV,dI]
 
             ax1.cla()
-            ax1.plot(range(10),database['Value'],database['Current'])
+            ax1.plot(range(10),database['CV'],database['CI'])
             ax1.set_ylim(0,4)
             ax1.set_title("Charge Side Voltage")
             ax1.set_ylabel("Voltage [V]")
             canvas1.draw()
 
             ax2.cla()
-            ax2.plot(range(10),database['Value'],database['Current'])
+            ax2.plot(range(10),database['DV'],database['DI'])
             ax2.set_ylim(0,4)
             ax2.set_title("Discharge Side Voltage")
             ax2.set_ylabel("Voltage [V]")
@@ -151,12 +158,12 @@ canvas2.get_tk_widget().pack(side= BOTTOM)
 PowerText = StringVar(root,"0")
 ChargeText = StringVar(root,"0")
 
-imgPanel = PhotoImage(file='panel.png',master=root)
-imgPanel = imgPanel.subsample(1,1)
-imgArrow = PhotoImage(file='arrow.png',master=root)
-imgArrow = imgArrow.subsample(20,20)
-imgBattery = PhotoImage(file='battery.png',master=root)
-imgBattery = imgBattery.subsample(3,3)
+# imgPanel = PhotoImage(file='panel.png',master=root)
+# imgPanel = imgPanel.subsample(1,1)
+# imgArrow = PhotoImage(file='arrow.png',master=root)
+# imgArrow = imgArrow.subsample(20,20)
+# imgBattery = PhotoImage(file='battery.png',master=root)
+# imgBattery = imgBattery.subsample(3,3)
 
 measureFrame = Frame(master= tabDat)
 measureFrame.pack(side= RIGHT)
@@ -167,28 +174,28 @@ Label(measureFrame,font=(18), textvariable = ChargeText,fg="black").grid(column=
 Label(measureFrame,font=(18),text= "Charge-side Power [W]").grid(column=1,row=4)
 Label(measureFrame,font=(18),text= "Battery Charge [%]").grid(column=3,row=4)
 
-Label(master= measureFrame,image=imgPanel).grid(column = 1, row = 3)
-Label(master= measureFrame,image=imgArrow).grid(column = 2, row = 3)
-Label(master= measureFrame,image=imgBattery).grid(column = 3, row = 3)
+# Label(master= measureFrame,image=imgPanel).grid(column = 1, row = 3)
+# Label(master= measureFrame,image=imgArrow).grid(column = 2, row = 3)
+# Label(master= measureFrame,image=imgBattery).grid(column = 3, row = 3)
 
 
 # ----------------- Control Tab ----------------
 Label(tabCtl, text='Here we display our control functionality').grid(column=0, row=0, padx=10, pady=10)
 
 ## Include State Icons
-imgFixed = PhotoImage(file='panelFixed.png',master=tabCtl)
-imgFixed = imgFixed.subsample(2,2)
-imgFree = PhotoImage(file='panelFree.png',master=tabCtl)
-imgFree = imgFree.subsample(2,2)
-imageAngle = Label(master= tabCtl,image=imgFixed)
-imageAngle.grid(column = 2, row = 1)
+# imgFixed = PhotoImage(file='panelFixed.png',master=tabCtl)
+# imgFixed = imgFixed.subsample(2,2)
+# imgFree = PhotoImage(file='panelFree.png',master=tabCtl)
+# imgFree = imgFree.subsample(2,2)
+# imageAngle = Label(master= tabCtl,image=imgFixed)
+# imageAngle.grid(column = 2, row = 1)
 
-imgChar = PhotoImage(file='modeC.png',master=tabCtl)
-imgChar = imgChar.subsample(2,2)
-imgDis = PhotoImage(file='modeD.png',master=tabCtl)
-imgDis = imgDis.subsample(2,2)
-imageMode = Label(master= tabCtl,image=imgChar)
-imageMode.grid(column = 2, row = 2)
+# imgChar = PhotoImage(file='modeC.png',master=tabCtl)
+# imgChar = imgChar.subsample(2,2)
+# imgDis = PhotoImage(file='modeD.png',master=tabCtl)
+# imgDis = imgDis.subsample(2,2)
+# imageMode = Label(master= tabCtl,image=imgChar)
+# imageMode.grid(column = 2, row = 2)
 
 ## Change axis state 
 modeText1 = StringVar(tabCtl,"Press to initialize sysetm.")
@@ -200,12 +207,12 @@ def switchFree():
 
     if isFree:
         modeText1.set("The system is in fixed-axis mode")
-        imageAngle.configure(image= imgFixed)
+        #imageAngle.configure(image= imgFixed)
         isFree = False
 
     else:
         modeText1.set("The system is in free-axis mode")
-        imageAngle.configure(image= imgFree)
+        #imageAngle.configure(image= imgFree)
         isFree = True
 
 Button(tabCtl, command=switchFree, text="Change Axis Mode").grid(column=1,row=1,pady = 50)
@@ -219,22 +226,22 @@ def switchMode():
     global modeText2
 
     if isMode == 2:
-        GPIO.output(charFET,GPIO.HIGH) #Turn on charge-side FET
+        #GPIO.output(charFET,GPIO.HIGH) #Turn on charge-side FET
         modeText2.set("The system is being charged by the solar panel")
         isMode = 0
 
     elif isMode: #If sytem is in state 1 (discharging), change to state 0 (charging)
-        GPIO.output(charFET,GPIO.HIGH) #Turn on charge-side FET
-        GPIO.output(disFET,GPIO.LOW) #Turn off discharge-side FET
+        #GPIO.output(charFET,GPIO.HIGH) #Turn on charge-side FET
+        #GPIO.output(disFET,GPIO.LOW) #Turn off discharge-side FET
         modeText2.set("The system is being charged by the solar panel")
-        imageMode.configure(image= imgChar)
+        #imageMode.configure(image= imgChar)
         isMode = 0
 
     else: #If sytem is in state 0 (charging), change to state 1 (discharging)
-        GPIO.output(charFET,GPIO.LOW) #Turn off charge-side FET
-        GPIO.output(disFET,GPIO.HIGH) #Turn on discharge-side FET
+        #GPIO.output(charFET,GPIO.LOW) #Turn off charge-side FET
+        #GPIO.output(disFET,GPIO.HIGH) #Turn on discharge-side FET
         modeText2.set("The system is discharging power to the load")
-        imageMode.configure(image= imgDis)
+        #imageMode.configure(image= imgDis)
         isMode = 1
 
 Button(tabCtl, command=switchMode, text="Change Charging Mode").grid(column=1,row=2,pady = 50)
