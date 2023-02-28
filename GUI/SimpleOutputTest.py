@@ -91,8 +91,8 @@ def regen():
             # plt.clf()
             # plt.scatter(range(11),database['Value'])
             count = 0
-
-    root.update()
+        
+        root.update()
 
 
 
