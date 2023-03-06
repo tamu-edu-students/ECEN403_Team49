@@ -69,6 +69,7 @@ def regen():
 
     while True:
         time.sleep(0.05)
+        root.update()
         count += 1
         getInput
 
@@ -100,9 +101,6 @@ def regen():
             ax2.set_title("Discharge Side Voltage")
             ax2.set_ylabel("Voltage [V]")
             canvas2.draw()
-
-            PowerText.set(cP)
-            ChargeText.set("24 %")
 
 
 
@@ -202,9 +200,9 @@ Button(buttonFrame,text="8 hours",height=2,width=10).grid(column=2,row=4)
 Button(buttonFrame,text="CANCEL",bg="red",height=2,width=10).grid(column=1,row=5)
 
 ##Change charging state
-imgChar = PhotoImage(file='GUI/modeC.png',master=tabCtl)
+imgChar = PhotoImage(file='modeC.png',master=tabCtl)
 imgChar = imgChar.subsample(3,3)
-imgDis = PhotoImage(file='GUI/modeD.png',master=tabCtl)
+imgDis = PhotoImage(file='modeD.png',master=tabCtl)
 imgDis = imgDis.subsample(3,3)
 imageMode = Label(master= tabCtl,image=imgChar)
 imageMode.grid(column = 0, row = 1)
@@ -241,9 +239,9 @@ Label(tabCtl,text="Manual Motor Control:").grid(column=0,row=2)
 motorFrame = Frame(master= tabCtl)
 motorFrame.grid(column=0,row=3)
 
-imgArrow1 = PhotoImage(file='GUI/cwarrow.png',master=tabCtl)
+imgArrow1 = PhotoImage(file='cwarrow.png',master=tabCtl)
 imgArrow1 = imgArrow1.subsample(20,20)
-imgArrow2 = PhotoImage(file='GUI/ccwarrow.png',master=tabCtl)
+imgArrow2 = PhotoImage(file='ccwarrow.png',master=tabCtl)
 imgArrow2 = imgArrow2.subsample(20,20)
 Button(motorFrame,image=imgArrow1,height=60,width=60).grid(column=0,row=1)
 Button(motorFrame,image=imgArrow2,height=60,width=60).grid(column=1,row=1)
