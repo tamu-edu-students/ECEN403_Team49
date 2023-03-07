@@ -101,6 +101,7 @@ def regen():
 
         if (count % int(duration/steps) == 0) and runningVar:
             motor.moveOnePeriod(1,3)
+            steps = steps - 1
 
         if count % 10 == 0:
             t = time.localtime()
