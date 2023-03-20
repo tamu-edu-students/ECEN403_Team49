@@ -30,8 +30,9 @@ dP = 0
 isFree = 0
 isMode = 2
 
-duration = 60
-steps = 256
+duration = 10
+period = 0
+steps = 256 
 runningVar = 0
 
 #~~~~~~~~~~~~~~~~~~~ PIN ASSIGNMENTS ~~~~~~~~~~~~~~~~~~~~~~#
@@ -40,14 +41,17 @@ disFET = 13
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 
-def setup():
-    print ("Setting up GPIO pins....")
+print ("Setting up GPIO pins....")
 
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(charFET,GPIO.OUT) #Setup charge side PFET gpio
-    GPIO.output(charFET, GPIO.LOW) #Initialize charge PFET to OFF
-    GPIO.setup(disFET,GPIO.OUT) #Setup discharge side PFET gpio
-    GPIO.output(disFET, GPIO.LOW) #Initialize discharge PFET to OFF
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(charFET,GPIO.OUT) #Setup charge side PFET gpio
+GPIO.output(charFET, GPIO.LOW) #Initialize charge PFET to OFF
+GPIO.setup(disFET,GPIO.OUT) #Setup discharge side PFET gpio
+GPIO.output(disFET, GPIO.LOW) #Initialize discharge PFET to OFF
+
+      # use PHYSICAL GPIO Numbering
+for pin in motor.motorPins:
+    GPIO.setup(pin,GPIO.OUT)
 
 def getInput():
 
@@ -65,19 +69,23 @@ def getInput():
 
 def setDuration(foo):
     global duration
-    duration = foo
-    hours = foo % 3600
-    minutes = (foo - hours*3600) % 60
-    print ("Time scale set to " + str(hours) + " hours and " + str(minutes) + " minutes.")
+    global runningVar
+    global period
+    if not runningVar:
+        duration = foo
+        period = int((duration/256)*1000)
+        print ("Time scale set to " + str(duration % 3600) + " hours and " + str(duration % 60) + " minutes.")
 
 def startMotor():
     global steps
     global runningVar
-    steps = 256
-    runningVar = 1
+    if not runningVar:
+        steps = 256
+        runningVar = 1
 
 def stopMotor():
     global runningVar
+    steps = 256
     runningVar = 0
     motor.motorStop
 
@@ -91,6 +99,8 @@ def regen():
     global ChargeText
     global duration 
     global steps
+    global runningVar
+    global period
 
     global cV,cI,cP,dV,dI,dP
 
@@ -99,9 +109,12 @@ def regen():
         count += 1
         getInput
 
-        if (count % int(duration/steps) == 0) and runningVar:
-            motor.moveOnePeriod(1,3)
+        if (count % period == 0) and runningVar: #If count
+            motor.moveSteps(1,3,1)
             steps = steps - 1
+            if (steps <= 0):
+                runningVar = 0
+            
 
         if count % 10 == 0:
             t = time.localtime()
@@ -132,16 +145,7 @@ def regen():
             ax2.set_ylabel("Voltage [V]")
             canvas2.draw()
 
-            PowerText.set(cP)
-            ChargeText.set("24 %")
-
-
-
-        if count == 200:
-
-            #plt.figure(fig2)
-            # plt.clf()
-            # plt.scatter(range(11),database['Value'])
+        if count % (10 * period) == 0:
             count = 0
         
         root.update()
@@ -149,18 +153,22 @@ def regen():
         
 root = Tk()
 root.title("MCU to Graph Test")
-
 tabControl = ttk.Notebook(root)
-
 tabCtl = Frame(tabControl)
 tabDat = Frame(tabControl)
-
 tabControl.add(tabDat, text='Control Systems')
 tabControl.pack(expand=1, fill="both")
-
 tabControl.add(tabCtl, text='Control Systems')
 tabControl.pack(expand=1, fill="both")
 
+PowerText = StringVar(tabCtl,"0")
+ChargeText = StringVar(tabCtl,"0")
+DischargeText = StringVar(tabCtl,"0")
+
+graphFrame = Frame(master=tabDat)
+graphFrame.pack(side= LEFT)
+
+#------------------------- Generate Graphs and Database ------------------#
 d = {'CV':[0,0,0,0,0,0,0,0,0,0],'CI':[0,0,0,0,0,0,0,0,0,0],
     'DV':[0,0,0,0,0,0,0,0,0,0],'DI':[0,0,0,0,0,0,0,0,0,0]}
 database = pd.DataFrame(data= d)
@@ -181,13 +189,6 @@ ax2.autoscale(False)
 ax2.set_title("Discharge Side Voltage")
 ax2.set_ylabel("Voltage [V]")
 
-PowerText = StringVar(tabCtl,"0")
-ChargeText = StringVar(tabCtl,"0")
-DischargeText = StringVar(tabCtl,"0")
-
-graphFrame = Frame(master=tabDat)
-graphFrame.pack(side= LEFT)
-
 canvas1 = FigureCanvasTkAgg(fig1,graphFrame)
 canvas1.draw()
 canvas1.get_tk_widget().pack(side= TOP)
@@ -199,44 +200,36 @@ canvas2.get_tk_widget().pack(side= BOTTOM)
 measureFrame = Frame(master= tabCtl)
 measureFrame.grid(column=0,row=3)
 
-#Label(measureFrame,font=(18), textvariable = ChargeText,fg="black").grid(column=0,row=0)
-#Label(measureFrame,font=(18), textvariable = DischargeText,fg="black").grid(column=0,row=1)
 
 # ----------------- Control Tab ----------------
 
 
 buttonFrame = Frame(master= tabCtl)
 buttonFrame.grid(column=2,row=1,padx=20)
-
 changeFrame = Frame(master= tabCtl)
 changeFrame.grid(column=0,row=0,pady=10)
 
-## Change axis state
 Label(tabCtl,text="Please select duration of operation mode:").grid(column=2,row=0,padx=100)
 
-Button(buttonFrame,text="1 minute",height=2,width=10,command=setDuration(60)).grid(column=0,row=1)
-Button(buttonFrame,text="5 minutes",height=2,width=10,command=setDuration(300)).grid(column=1,row=1)
-Button(buttonFrame,text="10 minutes",height=2,width=10,command=setDuration(600)).grid(column=2,row=1)
-
-Button(buttonFrame,text="30 minutes",height=2,width=10,command=setDuration(1800)).grid(column=0,row=2)
-Button(buttonFrame,text="1 hour",height=2,width=10,command=setDuration(3600)).grid(column=1,row=2)
-Button(buttonFrame,text="2 hours",height=2,width=10,command=setDuration(7200)).grid(column=2,row=2)
-
-Button(buttonFrame,text="3 hours",height=2,width=10,command=setDuration(10800)).grid(column=0,row=3)
-Button(buttonFrame,text="4 hours",height=2,width=10,command=setDuration(14400)).grid(column=1,row=3)
-Button(buttonFrame,text="5 hours",height=2,width=10,command=setDuration(18000)).grid(column=2,row=3)
-
-Button(buttonFrame,text="6 hours",height=2,width=10,command=setDuration(21600)).grid(column=0,row=4)
-Button(buttonFrame,text="7 hours",height=2,width=10,command=setDuration(25200)).grid(column=1,row=4)
-Button(buttonFrame,text="8 hours",height=2,width=10,command=setDuration(28800)).grid(column=2,row=4)
-
+Button(buttonFrame,text="5 seconds",height=2,width=10,command=lambda:setDuration(5),).grid(column=0,row=1)
+Button(buttonFrame,text="5 minutes",height=2,width=10,command=lambda:setDuration(300)).grid(column=1,row=1)
+Button(buttonFrame,text="10 minutes",height=2,width=10,command= lambda:setDuration(600)).grid(column=2,row=1)
+Button(buttonFrame,text="30 minutes",height=2,width=10,command=lambda:setDuration(1800)).grid(column=0,row=2)
+Button(buttonFrame,text="1 hour",height=2,width=10,command=lambda:setDuration(3600)).grid(column=1,row=2)
+Button(buttonFrame,text="2 hours",height=2,width=10,command=lambda:setDuration(7200)).grid(column=2,row=2)
+Button(buttonFrame,text="3 hours",height=2,width=10,command=lambda:setDuration(10800)).grid(column=0,row=3)
+Button(buttonFrame,text="4 hours",height=2,width=10,command=lambda:setDuration(14400)).grid(column=1,row=3)
+Button(buttonFrame,text="5 hours",height=2,width=10,command=lambda:setDuration(18000)).grid(column=2,row=3)
+Button(buttonFrame,text="6 hours",height=2,width=10,command=lambda:setDuration(21600)).grid(column=0,row=4)
+Button(buttonFrame,text="7 hours",height=2,width=10,command=lambda:setDuration(25200)).grid(column=1,row=4)
+Button(buttonFrame,text="8 hours",height=2,width=10,command=lambda:setDuration(28800)).grid(column=2,row=4)
 Button(buttonFrame,text="START",bg="green",height=2,width=10,command=startMotor).grid(column=0,row=5)
-Button(buttonFrame,text="CANCEL",bg="red",height=2,width=10,command=motor.motorStop).grid(column=2,row=5)
+Button(buttonFrame,text="CANCEL",bg="red",height=2,width=10,command=stopMotor).grid(column=2,row=5)
 
 ##Change charging state
-imgChar = PhotoImage(file='GUI/modeC.png',master=tabCtl)
+imgChar = PhotoImage(file='modeC.png',master=tabCtl)
 imgChar = imgChar.subsample(3,3)
-imgDis = PhotoImage(file='GUI/modeD.png',master=tabCtl)
+imgDis = PhotoImage(file='modeD.png',master=tabCtl)
 imgDis = imgDis.subsample(3,3)
 imageMode = Label(master= tabCtl,image=imgChar)
 imageMode.grid(column = 0, row = 1)
@@ -273,23 +266,19 @@ Label(tabCtl,text="Manual Motor Control:").grid(column=0,row=2)
 motorFrame = Frame(master= tabCtl)
 motorFrame.grid(column=0,row=3)
 
-imgArrow1 = PhotoImage(file='GUI/cwarrow.png',master=tabCtl)
+imgArrow1 = PhotoImage(file='cwarrow.png',master=tabCtl)
 imgArrow1 = imgArrow1.subsample(20,20)
-imgArrow2 = PhotoImage(file='GUI/ccwarrow.png',master=tabCtl)
+imgArrow2 = PhotoImage(file='ccwarrow.png',master=tabCtl)
 imgArrow2 = imgArrow2.subsample(20,20)
-Button(motorFrame,image=imgArrow1,height=60,width=60,command=motor.moveOnePeriod(1,3)).grid(column=0,row=1)
-Button(motorFrame,image=imgArrow2,height=60,width=60,command=motor.moveOnePeriod(0,3)).grid(column=1,row=1)
+Button(motorFrame,image=imgArrow1,height=60,width=60,command=lambda:motor.moveSteps(1,3,20)).grid(column=0,row=1)
+Button(motorFrame,image=imgArrow2,height=60,width=60,command=lambda:motor.moveSteps(0,3,30)).grid(column=1,row=1)
 
-statusFrame = Frame(master= tabCtl)
-statusFrame.grid(column=2,row=2,pady=30)
-
-Label(statusFrame,text="Motor currently operating:",fg="black").grid(column=0,row=0)
-Label(statusFrame,text="FALSE",fg="red").grid(column=1,row=0)
+#statusFrame = Frame(master= tabCtl)
+#statusFrame.grid(column=2,row=2,pady=30)
+#Label(statusFrame,text="Motor currently operating:",fg="black").grid(column=0,row=0)
+#Label(statusFrame,text="FALSE",fg="red").grid(column=1,row=0)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MAIN FUNCTION ~~~~~~~~~~~~~~~~~~~~~~~#
 
-setup()
-
 root.after(0,regen)
-
 root.mainloop()
