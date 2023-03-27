@@ -26,7 +26,7 @@ dischargeV = 3.5
 # ~~~~~~~~~~~~~~~~~ DATBASE READER ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 
-database = pd.read_csv("dummy2.csv") #Read data from database (CSV)
+database = pd.read_csv("GUI/dummy2.csv") #Read data from database (CSV)
 
 
 dbCFixed = database[(database['Free'] == 0) & (database['Mode'] == 0)]  #Only collect data when fixed-charging

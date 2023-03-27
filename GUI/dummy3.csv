@@ -1,5 +1,2 @@
-Time,Value
-0,0
-1,1
-2,2
-3,3
+t,cV,cI,cP,dV,dI,dP
+"time.struct_time(tm_year=2023, tm_mon=3, tm_mday=21, tm_hour=20, tm_min=33, tm_sec=11, tm_wday=1, tm_yday=80, tm_isdst=1)",0,1,0,1,2,2
