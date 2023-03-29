@@ -381,6 +381,7 @@ modeText1 = StringVar(tabCtl,"Press button to initialize")
 Label(alpha3, textvariable = modeText1,fg="black").grid(column=0,row=0)
 Button(alpha3, command=switchFree, text="Change Axis Mode").grid(column=1,row=0)
 
+motorText = StringVar(tabCtl,"Press button to initialize")
 Label(beta3,text="Motor currently operating:",fg="black").grid(column=0,row=0)
 Label(beta3,text="FALSE",fg="red").grid(column=1,row=0)
 Label(beta3,text="Manual Motor Control:").grid(column=0,row=1)
