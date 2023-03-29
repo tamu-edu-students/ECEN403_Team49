@@ -137,14 +137,20 @@ def regen():
             database.loc[9] = [cV,cI,dV,dI]
 
             ax1.cla()
-            ax1.plot(range(10),database['CV'],database['DV'])
+            if (isMode == 1):
+                  ax1.plot(range(10),database['DV'])
+            else:
+                  ax1.plot(range(10),database['CV'])
             ax1.set_ylim(0,4.5)
             ax1.set_title("Voltage Measurements")
             ax1.set_ylabel("Voltage [V]")
             canvas1.draw()
 
             ax2.cla()
-            ax2.plot(range(10),database['CI'],database['DI'])
+            if (isMode == 1):
+                  ax2.plot(range(10),database['DI'])
+            else:
+                  ax2.plot(range(10),database['CI'])
             ax2.set_ylim(0,0.4)
             ax2.set_title("Current Measurements")
             ax2.set_ylabel("Current [A]")
