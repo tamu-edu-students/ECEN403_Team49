@@ -108,6 +108,7 @@ def regen():
         time.sleep(0.05)
         count += 1
         getInput
+        print(count)
 
         if (count % period == 0) and runningVar: #If count
             motor.moveSteps(1,3,1)

@@ -50,10 +50,10 @@ def getInput():
 
     t = time.strftime("%d,%b %H:%M:%S")
     cV = (adc.read(channel=0)) * (5.21/1023.0)
-    cI = (adc.read(channel=1)) * (5.21/1023.0)
+    cI = (adc.read(channel=1)) * (5.21/1023.0) *1000 / (0.005*50) #mA
     cP = cV * cI
     dV = (adc.read(channel=3)) * (5.21/1023.0)
-    dI = (adc.read(channel=4)) * (5.21/1023.0)
+    dI = (adc.read(channel=4)) * (5.21/1023.0) *1000 / (0.25*50) #mA
     dP = dV * dI
     root.update()
 

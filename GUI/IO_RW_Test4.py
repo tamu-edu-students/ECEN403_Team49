@@ -226,7 +226,7 @@ def switchMode():
     global modeText2
 
     if isMode == 2:
-        #GPIO.output(charFET,GPIO.HIGH) #Turn on charge-side FET
+        GPIO.output(charFET,GPIO.HIGH) #Turn on charge-side FET
         modeText2.set("The system is being charged by the solar panel")
         isMode = 0
 

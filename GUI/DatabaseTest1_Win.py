@@ -215,15 +215,15 @@ imgBattery = imgBattery.subsample(3,3)
 
 measureFrame = Frame(master= dataFrame).grid(row=1,column=1)
 
-Label(measureFrame,font=(18), textvariable = PowerText,fg="black").grid(column=1,row=2)
-Label(measureFrame,font=(18), textvariable = ChargeText,fg="black").grid(column=3,row=2)
+# Label(measureFrame,font=(18), textvariable = PowerText,fg="black").grid(column=1,row=2)
+# Label(measureFrame,font=(18), textvariable = ChargeText,fg="black").grid(column=3,row=2)
 
-Label(measureFrame,font=(18),text= "Charge-side Power [W]").grid(column=1,row=1)
-Label(measureFrame,font=(18),text= "Battery Charge [%]").grid(column=3,row=1)
+# Label(measureFrame,font=(18),text= "Charge-side Power [W]").grid(column=1,row=1)
+# Label(measureFrame,font=(18),text= "Battery Charge [%]").grid(column=3,row=1)
 
-Label(master= measureFrame,image=imgPanel).grid(column = 1, row = 0)
-Label(master= measureFrame,image=imgArrow).grid(column = 2, row = 0)
-Label(master= measureFrame,image=imgBattery).grid(column = 3, row = 0)
+# Label(master= measureFrame,image=imgPanel).grid(column = 1, row = 0)
+# Label(master= measureFrame,image=imgArrow).grid(column = 2, row = 0)
+# Label(master= measureFrame,image=imgBattery).grid(column = 3, row = 0)
 
 dataLong = pd.read_csv("GUI/dummyLong.csv")
 
