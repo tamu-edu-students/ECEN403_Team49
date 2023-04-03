@@ -14,13 +14,13 @@ from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 
 
-from MCP3008 import MCP3008
+#from MCP3008 import MCP3008
 import time
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 
-import stepper_motor as motor
+#import stepper_motor as motor
 
-adc = MCP3008()
+#adc = MCP3008()
 
 cV = 0
 cI = 0
@@ -43,15 +43,15 @@ charFET = 11
 disFET = 13
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(charFET,GPIO.OUT) #Setup charge side PFET gpio
-GPIO.output(charFET, GPIO.HIGH) #Initialize charge PFET to OFF
-GPIO.setup(disFET,GPIO.OUT) #Setup discharge side PFET gpio
-GPIO.output(disFET, GPIO.HIGH) #Initialize discharge PFET to OFF
+#GPIO.setmode(GPIO.BOARD)
+#GPIO.setup(charFET,GPIO.OUT) #Setup charge side PFET gpio
+#GPIO.output(charFET, GPIO.HIGH) #Initialize charge PFET to OFF
+#GPIO.setup(disFET,GPIO.OUT) #Setup discharge side PFET gpio
+#GPIO.output(disFET, GPIO.HIGH) #Initialize discharge PFET to OFF
 
       # use PHYSICAL GPIO Numbering
-for pin in motor.motorPins:
-    GPIO.setup(pin,GPIO.OUT)
+#for pin in motor.motorPins:
+#    GPIO.setup(pin,GPIO.OUT)
 
 def getInput():
 
@@ -62,25 +62,26 @@ def getInput():
 
     t = time.strftime("%d,%b %H:%M:%S")
     if (isMode == 0): #Charging
-      cV = (adc.read(channel=1)) * (5.21/1023.0)
-      cI = (adc.read(channel=0)) * (5.21/1023.0) *1000 / (0.005*50)
-      cP = cV * cI
-      dV = (adc.read(channel=4)) * (5.21/1023.0)
-      dI = 0
-      dP = 0
+#      cV = (adc.read(channel=1)) * (5.21/1023.0)
+        cV = (random.randint(35,42))/10
+#      cI = (adc.read(channel=0)) * (5.21/1023.0) *1000 / (0.005*50)
+#      cP = cV * cI
+#      dV = (adc.read(channel=4)) * (5.21/1023.0)
+        dI = 0
+        dP = 0
     elif (isMode == 1): #Discharging
-      cV = (adc.read(channel=1)) * (5.21/1023.0)
+#      cV = (adc.read(channel=1)) * (5.21/1023.0)
       cI = 0
       cP = 0
-      dV = (adc.read(channel=4)) * (5.21/1023.0)
-      dI = (adc.read(channel=3)) * (5.21/1023.0) *1000 / (0.25*50)
+#      dV = (adc.read(channel=4)) * (5.21/1023.0)
+#      dI = (adc.read(channel=3)) * (5.21/1023.0) *1000 / (0.25*50)
       dP = dV * dI
     else:
-      cV = (adc.read(channel=1)) * (5.21/1023.0)
-      cI = (adc.read(channel=0)) * (5.21/1023.0) *1000 / (0.005*50)
+ #     cV = (adc.read(channel=1)) * (5.21/1023.0)
+ #     cI = (adc.read(channel=0)) * (5.21/1023.0) *1000 / (0.005*50)
       cP = cV * cI
-      dV = (adc.read(channel=4)) * (5.21/1023.0)
-      dI = (adc.read(channel=3)) * (5.21/1023.0) *1000 / (0.25*50)
+  #    dV = (adc.read(channel=4)) * (5.21/1023.0)
+   #   dI = (adc.read(channel=3)) * (5.21/1023.0) *1000 / (0.25*50)
       dP = dV * dI
     PowerText = str(cP)
     ChargeText = str(dP)
@@ -110,13 +111,10 @@ def stopMotor():
 
 def regen():
     count = 0
-    global database
+    global database, database2
     global PowerText
     global ChargeText
-    global duration 
-    global steps
-    global runningVar
-    global period
+    global duration,steps,runningVar,period
 
     global cV,cI,cP,dV,dI,dP,t
 
@@ -125,7 +123,7 @@ def regen():
         getInput()
 
         if (count % period == 0) and runningVar: #If count
-            motor.moveSteps(1,3,16)
+#            motor.moveSteps(1,3,16)
             steps = steps - 1
             if (steps <= 0):
                 runningVar = 0
@@ -187,7 +185,6 @@ def regen():
             canvas3.draw()
 
 
-
         if count % (100 * period) == 0:
             count = 0
         
@@ -218,7 +215,7 @@ d = {'CV':[0,0,0,0,0,0,0,0,0,0],'CI':[0,0,0,0,0,0,0,0,0,0],
     'DV':[0,0,0,0,0,0,0,0,0,0],'DI':[0,0,0,0,0,0,0,0,0,0]}
 database = pd.DataFrame(data= d)
 
-database2 = pd.DataFrame(0, index=range(0,100))
+database2 = pd.DataFrame(0, index=range(0,50), columns=range(1))
 
 fig1,ax1 = plt.subplots()
 fig1.set_size_inches(5,3)
@@ -260,11 +257,11 @@ canvas3.get_tk_widget().grid(row=0,column=1)
 PowerText = StringVar(root,"0")
 ChargeText = StringVar(root,"0")
 
-imgPanel = PhotoImage(file='panel.png',master=root)
+imgPanel = PhotoImage(file='GUI/panel.png',master=root)
 imgPanel = imgPanel.subsample(3,3)
-imgArrow = PhotoImage(file='arrow.png',master=root)
+imgArrow = PhotoImage(file='GUI/arrow.png',master=root)
 imgArrow = imgArrow.subsample(40,40)
-imgBattery = PhotoImage(file='battery.png',master=root)
+imgBattery = PhotoImage(file='GUI/battery.png',master=root)
 imgBattery = imgBattery.subsample(7,7)
 
 measureFrame = Frame(master=tabDat)
@@ -280,14 +277,14 @@ Label(master= measureFrame,image=imgPanel).grid(column = 1, row = 0)
 Label(master= measureFrame,image=imgArrow).grid(column = 2, row = 0)
 Label(master= measureFrame,image=imgBattery).grid(column = 3, row = 0)
 
-dataLong = pd.read_csv("dummyLong.csv")
+dataLong = pd.read_csv("GUI/dummyLong.csv")
 
 # ----------------- Animation Tab ----------------
 ttk.Label(tabAni, text='Here we display our system animation').grid(column=0, row=0, padx=0, pady=10)
 
 # Intialize Frames of Animation as PhotoImages
-framesChar = [PhotoImage(master=tabAni,file='chargeAnim/charge%i.png' %(i)) for i in range(1,7)]
-framesDis = [PhotoImage(master=tabAni,file='dischargeAnim/discharge%i.png' %(i)) for i in range(1,6)]
+framesChar = [PhotoImage(master=tabAni,file='GUI/chargeAnim/charge%i.png' %(i)) for i in range(1,7)]
+framesDis = [PhotoImage(master=tabAni,file='GUI/dischargeAnim/discharge%i.png' %(i)) for i in range(1,6)]
 
 #initialize animation photo in cneter of frame
 animation = Label(tabAni,image = None)
@@ -335,6 +332,7 @@ def resetDis():
 Button(tabAni, text="Restart Charge Animation",command=resetChar).grid(column=0,row=1,padx=30)
 Button(tabAni, text="Restart Discharge Animation",command=resetDis).grid(column=1,row=1)
 
+
 # ----------------- Control Tab ----------------
 
 AlphaFrame = Frame(master=tabCtl)
@@ -379,16 +377,16 @@ Button(beta2,text="START",bg="green",height=2,width=10,command=startMotor).grid(
 Button(beta2,text="CANCEL",bg="red",height=2,width=10,command=stopMotor).grid(column=2,row=5)
 
 ##Change charging state
-imgChar = PhotoImage(file='modeC.png',master=root)
+imgChar = PhotoImage(file='GUI/modeC.png',master=root)
 imgChar = imgChar.subsample(4,4)
-imgDis = PhotoImage(file='modeD.png',master=root)
+imgDis = PhotoImage(file='GUI/modeD.png',master=root)
 imgDis = imgDis.subsample(4,4)
 imageMode = Label(master= alpha2,image=imgChar)
 imageMode.grid(column=0,row=0)
 
-imgFixed = PhotoImage(file='panelFixed.png',master=root)
+imgFixed = PhotoImage(file='GUI/panelFixed.png',master=root)
 imgFixed = imgFixed.subsample(4,4)
-imgFree = PhotoImage(file='panelFree.png',master=root)
+imgFree = PhotoImage(file='GUI/panelFree.png',master=root)
 imgFree = imgFree.subsample(4,4)
 imageAngle = Label(master= alpha4,image=imgFixed)
 imageAngle.grid(column=0, row=0)
@@ -398,20 +396,20 @@ def switchMode():
     global modeText2
 
     if isMode == 2: #initialized state
-        GPIO.output(charFET,GPIO.LOW) #Turn on charge-side FET
+#        GPIO.output(charFET,GPIO.LOW) #Turn on charge-side FET
         modeText2.set("NOW: Panel charging")
         isMode = 0
 
     elif isMode: #If sytem is in state 1 (discharging), change to state 0 (charging)
-        GPIO.output(charFET,GPIO.LOW) #Turn on charge-side FET
-        GPIO.output(disFET,GPIO.HIGH) #Turn off discharge-side FET
+#        GPIO.output(charFET,GPIO.LOW) #Turn on charge-side FET
+#        GPIO.output(disFET,GPIO.HIGH) #Turn off discharge-side FET
         imageMode.configure(image= imgChar)
         modeText2.set("NOW: Panel charging")
         isMode = 0
 
     else: #If sytem is in state 0 (charging), change to state 1 (discharging)
-        GPIO.output(charFET,GPIO.HIGH) #Turn off charge-side FET
-        GPIO.output(disFET,GPIO.LOW) #Turn on discharge-side FET
+#        GPIO.output(charFET,GPIO.HIGH) #Turn off charge-side FET
+#        GPIO.output(disFET,GPIO.LOW) #Turn on discharge-side FET
         imageMode.configure(image= imgDis)
         modeText2.set("NOW: Battery discharging")
         isMode = 1
@@ -443,12 +441,12 @@ Label(beta3,text="Motor currently operating:",fg="black").grid(column=0,row=0)
 Label(beta3,text="FALSE",fg="red").grid(column=1,row=0)
 Label(beta3,text="Manual Motor Control:").grid(column=0,row=1)
 
-imgArrow1 = PhotoImage(file='cwarrow.png',master=tabCtl)
+imgArrow1 = PhotoImage(file='GUI/cwarrow.png',master=tabCtl)
 imgArrow1 = imgArrow1.subsample(20,20)
-imgArrow2 = PhotoImage(file='ccwarrow.png',master=tabCtl)
+imgArrow2 = PhotoImage(file='GUI/ccwarrow.png',master=tabCtl)
 imgArrow2 = imgArrow2.subsample(20,20)
-Button(beta4,image=imgArrow1,height=60,width=60,command=lambda:motor.moveSteps(1,3,20)).grid(column=0,row=1)
-Button(beta4,image=imgArrow2,height=60,width=60,command=lambda:motor.moveSteps(0,3,30)).grid(column=1,row=1)
+#Button(beta4,image=imgArrow1,height=60,width=60,command=lambda:motor.moveSteps(1,3,20)).grid(column=0,row=1)
+#Button(beta4,image=imgArrow2,height=60,width=60,command=lambda:motor.moveSteps(0,3,30)).grid(column=1,row=1)
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MAIN FUNCTION ~~~~~~~~~~~~~~~~~~~~~~~#
