@@ -34,7 +34,7 @@ isFree = 0
 isMode = 2
 
 duration = 10
-period = 10/16
+period = 160
 steps = 16
 runningVar = 0
 
@@ -62,29 +62,26 @@ def getInput():
 
     t = time.strftime("%d,%b %H:%M:%S")
     if (isMode == 0): #Charging
-#      cV = (adc.read(channel=1)) * (5.21/1023.0)
-        cV = (random.randint(35,42))/10
-#      cI = (adc.read(channel=0)) * (5.21/1023.0) *1000 / (0.005*50)
-#      cP = cV * cI
-#      dV = (adc.read(channel=4)) * (5.21/1023.0)
-        dI = 0
-        dP = 0
+      cV = (random.randint(35,42) / 10)
+      cI = (random.randint(0,5)) * (5.21/1023.0) *1000 / (0.005*50)
+      cP = cV * cI
+      dV = (random.randint(0,5)) * (5.21/1023.0)
+      dI = 0
+      dP = 0
     elif (isMode == 1): #Discharging
-#      cV = (adc.read(channel=1)) * (5.21/1023.0)
+      cV = (random.randint(0,5)) * (5.21/1023.0)
       cI = 0
       cP = 0
-#      dV = (adc.read(channel=4)) * (5.21/1023.0)
-#      dI = (adc.read(channel=3)) * (5.21/1023.0) *1000 / (0.25*50)
+      dV = (random.randint(0,5)) * (5.21/1023.0)
+      dI = (random.randint(0,5)) * (5.21/1023.0) *1000 / (0.25*50)
       dP = dV * dI
     else:
- #     cV = (adc.read(channel=1)) * (5.21/1023.0)
- #     cI = (adc.read(channel=0)) * (5.21/1023.0) *1000 / (0.005*50)
+      cV = (random.randint(0,5)) * (5.21/1023.0)
+      cI = (random.randint(0,5)) * (5.21/1023.0) *1000 / (0.005*50)
       cP = cV * cI
-  #    dV = (adc.read(channel=4)) * (5.21/1023.0)
-   #   dI = (adc.read(channel=3)) * (5.21/1023.0) *1000 / (0.25*50)
+      dV = (random.randint(0,5)) * (5.21/1023.0)
+      dI = (random.randint(0,5)) * (5.21/1023.0) *1000 / (0.25*50)
       dP = dV * dI
-    PowerText = str(cP)
-    ChargeText = str(dP)
     root.update()
 
 def setDuration(foo):
@@ -94,6 +91,7 @@ def setDuration(foo):
     if not runningVar:
         duration = foo
         period = int((duration/16)*100)
+        print(period)
         print ("Time scale set to " + str(duration // 3600) + " hours and " + str(duration % 60) + " minutes.")
 
 def startMotor():
@@ -102,6 +100,7 @@ def startMotor():
     if not runningVar:
         steps = 16
         runningVar = 1
+        print("Now Running")
 
 def stopMotor():
     global runningVar
@@ -111,28 +110,29 @@ def stopMotor():
 
 def regen():
     count = 0
-    global database, database2
+    global database,database2
     global PowerText
     global ChargeText
-    global duration,steps,runningVar,period
+    global duration 
+    global steps
+    global runningVar
+    global period
 
     global cV,cI,cP,dV,dI,dP,t
 
     while True:
         count += 1
         getInput()
+        #print(count)
 
         if (count % period == 0) and runningVar: #If count
-#            motor.moveSteps(1,3,16)
+            #motor.moveSteps(1,3,16)
             steps = steps - 1
             if (steps <= 0):
                 runningVar = 0
             
 
         if count % 10 == 0:
-
-            #ChargeText = "CV: " + str(cV) + "\t CI: " + str(cI) + "\t CP: " + str(cP)
-            #DischargeText = "CV: " + str(cV) + "\t CI: " + str(cI) + "\t CP: " + str(cP)
 
             database = database.shift(-1)
             database.loc[9] = [cV,cI,dV,dI]
@@ -155,7 +155,6 @@ def regen():
             ax2.set_ylim(0,400)
             ax2.set_title("Current Measurements")
             ax2.set_ylabel("Current [A]")
-            canvas2.draw()
 
 
         if count % 120 == 0:
@@ -177,6 +176,10 @@ def regen():
                 foo = 100
             database2.loc[99] = [foo]
 
+            ChargeText.set(format(cP,'.4f'))
+            DischargeText.set(format(dP,'.4f'))
+            PowerText.set(format(foo,'.2f'))
+
             ax3.cla()
             ax3.plot(range(100),database2[0],color='blue')
             ax3.set_ylim(0,100)
@@ -185,15 +188,17 @@ def regen():
             canvas3.draw()
 
 
-        if count % (100 * period) == 0:
+
+        if count % (120 * period) == 0:
             count = 0
         
         root.update()
            
         
 root = Tk()
-#root.geometry("800x480")
+root.geometry("800x480")
 root.title("MCU to Graph Test")
+root.resizable(0,0)
 #root.maxsize(800,480)
 tabControl = ttk.Notebook(root)
 tabCtl = Frame(tabControl)
@@ -206,16 +211,16 @@ tabControl.pack(expand=1, fill="both")
 tabControl.add(tabAni, text='System Animation')
 tabControl.pack(expand=1, fill="both")
 
-PowerText = StringVar(tabCtl,"0")
-ChargeText = StringVar(tabCtl,"0")
-DischargeText = StringVar(tabCtl,"0")
+PowerText = StringVar(root,"0")
+ChargeText = StringVar(root,"0")
+DischargeText = StringVar(root,"0")
 
 #------------------------- Generate Graphs and Database ------------------#
 d = {'CV':[0,0,0,0,0,0,0,0,0,0],'CI':[0,0,0,0,0,0,0,0,0,0],
     'DV':[0,0,0,0,0,0,0,0,0,0],'DI':[0,0,0,0,0,0,0,0,0,0]}
 database = pd.DataFrame(data= d)
 
-database2 = pd.DataFrame(0, index=range(0,50), columns=range(1))
+database2 = pd.DataFrame(0, index=range(0,100),columns=range(1))
 
 fig1,ax1 = plt.subplots()
 fig1.set_size_inches(5,3)
@@ -224,10 +229,12 @@ ax1.plot(range(10),database['CV'],database['DV'])
 ax1.autoscale(False)
 ax1.set_title("Voltage Measurements")
 ax1.set_ylabel("Voltage [V]")
+fig1.set_facecolor("#0F0F0F0F")
 
 fig2,ax2 = plt.subplots()
 fig2.set_size_inches(5,3)
 fig2.set_dpi(60)
+fig2.set_facecolor("#0F0F0F0F")
 ax2.plot(range(10),database['CI'],database['DI'])
 ax2.autoscale(False)
 ax2.set_title("Current Measurements")
@@ -236,11 +243,10 @@ ax2.set_ylabel("Current [A]")
 fig3,ax3 = plt.subplots()
 fig3.set_size_inches(5,3)
 fig3.set_dpi(60)
+fig3.set_facecolor("#0F0F0F0F")
 ax3.plot(range(100),database2[0])
 ax3.set_title("Battery Storage Tracker")
 ax3.set_ylabel("Battery Storage [%]")
-
-#dataFrame = Frame(master=tabDat).grid(row=0,column=0)
 
 canvas1 = FigureCanvasTkAgg(fig1,tabDat)
 canvas1.draw()
@@ -260,35 +266,46 @@ ChargeText = StringVar(root,"0")
 imgPanel = PhotoImage(file='GUI/panel.png',master=root)
 imgPanel = imgPanel.subsample(3,3)
 imgArrow = PhotoImage(file='GUI/arrow.png',master=root)
-imgArrow = imgArrow.subsample(40,40)
+imgArrow = imgArrow.subsample(100,60)
 imgBattery = PhotoImage(file='GUI/battery.png',master=root)
 imgBattery = imgBattery.subsample(7,7)
+imgGame = PhotoImage(file='GUI/game.png',master=root)
+imgGame = imgGame.subsample(15,15)
 
 measureFrame = Frame(master=tabDat)
 measureFrame.grid(column=1,row=1)
 
-Label(measureFrame,font=(14), textvariable = PowerText,fg="black").grid(column=1,row=2)
-Label(measureFrame,font=(14), textvariable = ChargeText,fg="black").grid(column=3,row=2)
+Label(measureFrame,font=('Arial',8), textvariable = ChargeText,fg="black").grid(column=1,row=2)
+Label(measureFrame,font=('Arial',8), textvariable = PowerText,fg="black").grid(column=3,row=2)
+Label(measureFrame,font=('Arial',8), textvariable = DischargeText,fg="black").grid(column=5,row=2)
 
-Label(measureFrame,font=(14),text= "Charge-side Power [W]").grid(column=1,row=1)
-Label(measureFrame,font=(14),text= "Battery Charge [%]").grid(column=3,row=1)
+Label(measureFrame,font=('Arial',8),text= "Power In [W]").grid(column=1,row=1)
+Label(measureFrame,font=('Arial',8),text= "Battery Charge [%]").grid(column=3,row=1)
+Label(measureFrame,font=('Arial',8),text= "Power Out [W]").grid(column=5,row=1)
 
 Label(master= measureFrame,image=imgPanel).grid(column = 1, row = 0)
 Label(master= measureFrame,image=imgArrow).grid(column = 2, row = 0)
 Label(master= measureFrame,image=imgBattery).grid(column = 3, row = 0)
-
-dataLong = pd.read_csv("GUI/dummyLong.csv")
+Label(master= measureFrame,image=imgArrow).grid(column = 4, row = 0)
+Label(master= measureFrame,image=imgGame).grid(column = 5, row = 0)
 
 # ----------------- Animation Tab ----------------
-ttk.Label(tabAni, text='Here we display our system animation').grid(column=0, row=0, padx=0, pady=10)
+controlFrame = Frame(master=tabAni)
+controlFrame.place(anchor="n",x=400,y=25)
+animFrame = Frame(master=tabAni)
+animFrame.place(anchor='s',x=400,y=350)
 
 # Intialize Frames of Animation as PhotoImages
 framesChar = [PhotoImage(master=tabAni,file='GUI/chargeAnim/charge%i.png' %(i)) for i in range(1,7)]
+for i in range(6):
+    framesChar[i] = framesChar[i].subsample(2,2)
+    
 framesDis = [PhotoImage(master=tabAni,file='GUI/dischargeAnim/discharge%i.png' %(i)) for i in range(1,6)]
-
+for i in range(5):
+    framesDis[i]= framesDis[i].subsample(2,2)
 #initialize animation photo in cneter of frame
-animation = Label(tabAni,image = None)
-animation.grid(column=1,row=2,pady= 20)
+animation = Label(animFrame,image = None)
+animation.grid(column=0,row=0)
 
 #Cycle through the individual frames of the animation
 def playChar(i):
@@ -297,8 +314,9 @@ def playChar(i):
     i += 1
     if i == 6:
         i = 0
+    #frame = frame.subsample(2,2)
     animation.configure(image=frame)        #push next frame
-    check = root.after(1000,playChar,i)     #iterate after ~1 sec
+    check = root.after(3000,playChar,i)     #iterate after ~1 sec
 
 #Restart Animation frames
 def resetChar():
@@ -317,7 +335,7 @@ def playDis(j):
     if j == 5:
         j = 0
     animation.configure(image=frame)
-    check = root.after(1000,playDis,j) 
+    check = root.after(3000,playDis,j) 
 
 #Restart Animation frames
 def resetDis():
@@ -329,16 +347,15 @@ def resetDis():
     playDis(0)
 
 # Create buttons to reset animations when pressed
-Button(tabAni, text="Restart Charge Animation",command=resetChar).grid(column=0,row=1,padx=30)
-Button(tabAni, text="Restart Discharge Animation",command=resetDis).grid(column=1,row=1)
-
+Button(controlFrame, text="Restart Charge Animation",command=resetChar).grid(column=0,row=0,padx=30)
+Button(controlFrame, text="Restart Discharge Animation",command=resetDis).grid(column=1,row=0)
 
 # ----------------- Control Tab ----------------
 
 AlphaFrame = Frame(master=tabCtl)
-AlphaFrame.grid(column=0,row=0,padx=60)
+AlphaFrame.place(x=50,y=25)
 BetaFrame = Frame(master=tabCtl)
-BetaFrame.grid(column=1,row=0)
+BetaFrame.place(x=500,y=0)
 
 alpha1 = Frame(master= AlphaFrame)
 alpha1.grid(row=0)
@@ -361,7 +378,7 @@ beta4.grid(row=3)
 
 Label(beta1,text="Please select duration of operation mode:").grid(column = 0, row=0)
 
-Button(beta2,text="5 seconds",height=2,width=10,command=lambda:setDuration(5),).grid(column=0,row=1)
+Button(beta2,text="10 seconds",height=2,width=10,command=lambda:setDuration(5),).grid(column=0,row=1)
 Button(beta2,text="5 minutes",height=2,width=10,command=lambda:setDuration(300)).grid(column=1,row=1)
 Button(beta2,text="10 minutes",height=2,width=10,command= lambda:setDuration(600)).grid(column=2,row=1)
 Button(beta2,text="30 minutes",height=2,width=10,command=lambda:setDuration(1800)).grid(column=0,row=2)
@@ -396,27 +413,27 @@ def switchMode():
     global modeText2
 
     if isMode == 2: #initialized state
-#        GPIO.output(charFET,GPIO.LOW) #Turn on charge-side FET
+        #GPIO.output(charFET,GPIO.LOW) #Turn on charge-side FET
         modeText2.set("NOW: Panel charging")
         isMode = 0
 
     elif isMode: #If sytem is in state 1 (discharging), change to state 0 (charging)
-#        GPIO.output(charFET,GPIO.LOW) #Turn on charge-side FET
-#        GPIO.output(disFET,GPIO.HIGH) #Turn off discharge-side FET
+        #GPIO.output(charFET,GPIO.LOW) #Turn on charge-side FET
+        #GPIO.output(disFET,GPIO.HIGH) #Turn off discharge-side FET
         imageMode.configure(image= imgChar)
         modeText2.set("NOW: Panel charging")
         isMode = 0
 
     else: #If sytem is in state 0 (charging), change to state 1 (discharging)
-#        GPIO.output(charFET,GPIO.HIGH) #Turn off charge-side FET
-#        GPIO.output(disFET,GPIO.LOW) #Turn on discharge-side FET
+        #GPIO.output(charFET,GPIO.HIGH) #Turn off charge-side FET
+        #GPIO.output(disFET,GPIO.LOW) #Turn on discharge-side FET
         imageMode.configure(image= imgDis)
         modeText2.set("NOW: Battery discharging")
         isMode = 1
 
 modeText2 = StringVar(tabCtl,"Press button to initialize")
 Label(alpha1, textvariable = modeText2,fg="black").grid(column=0,row=0)
-Button(alpha1, command=switchMode, text="Change Charging Mode").grid(column=1,row=0)
+Button(alpha1, command=switchMode, text="Change Charging Mode").grid(column=0,row=1)
 
 def switchFree():
     global isFree
@@ -434,7 +451,7 @@ def switchFree():
 
 modeText1 = StringVar(tabCtl,"Press button to initialize")
 Label(alpha3, textvariable = modeText1,fg="black").grid(column=0,row=0)
-Button(alpha3, command=switchFree, text="Change Axis Mode").grid(column=1,row=0)
+Button(alpha3, command=switchFree, text="Change Axis Mode").grid(column=0,row=1)
 
 motorText = StringVar(tabCtl,"Press button to initialize")
 Label(beta3,text="Motor currently operating:",fg="black").grid(column=0,row=0)
@@ -445,8 +462,8 @@ imgArrow1 = PhotoImage(file='GUI/cwarrow.png',master=tabCtl)
 imgArrow1 = imgArrow1.subsample(20,20)
 imgArrow2 = PhotoImage(file='GUI/ccwarrow.png',master=tabCtl)
 imgArrow2 = imgArrow2.subsample(20,20)
-#Button(beta4,image=imgArrow1,height=60,width=60,command=lambda:motor.moveSteps(1,3,20)).grid(column=0,row=1)
-#Button(beta4,image=imgArrow2,height=60,width=60,command=lambda:motor.moveSteps(0,3,30)).grid(column=1,row=1)
+Button(beta4,image=imgArrow1,height=60,width=60).grid(column=0,row=1)
+Button(beta4,image=imgArrow2,height=60,width=60).grid(column=1,row=1)
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MAIN FUNCTION ~~~~~~~~~~~~~~~~~~~~~~~#

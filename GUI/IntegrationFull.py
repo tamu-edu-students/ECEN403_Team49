@@ -93,6 +93,7 @@ def setDuration(foo):
     if not runningVar:
         duration = foo
         period = int((duration/16)*100)
+        print(period)
         print ("Time scale set to " + str(duration // 3600) + " hours and " + str(duration % 60) + " minutes.")
 
 def startMotor():
@@ -101,6 +102,7 @@ def startMotor():
     if not runningVar:
         steps = 16
         runningVar = 1
+        print("Now Running")
 
 def stopMotor():
     global runningVar
@@ -110,7 +112,7 @@ def stopMotor():
 
 def regen():
     count = 0
-    global database
+    global database,database2
     global PowerText
     global ChargeText
     global duration 
@@ -132,9 +134,6 @@ def regen():
             
 
         if count % 10 == 0:
-
-            #ChargeText = "CV: " + str(cV) + "\t CI: " + str(cI) + "\t CP: " + str(cP)
-            #DischargeText = "CV: " + str(cV) + "\t CI: " + str(cI) + "\t CP: " + str(cP)
 
             database = database.shift(-1)
             database.loc[9] = [cV,cI,dV,dI]
@@ -161,7 +160,7 @@ def regen():
 
 
         if count % 120 == 0:
-            file = open("GUI/dummyLong.csv","a")
+            file = open("dummyLong.csv","a")
             writer = csv.writer(file)
             data = [t,cV,cI,cP,dV,dI,dP]
             writer.writerow(data)
@@ -179,6 +178,10 @@ def regen():
                 foo = 100
             database2.loc[99] = [foo]
 
+            ChargeText.set(format(cP,'.4f'))
+            DischargeText.set(format(dP,'.4f'))
+            PowerText.set(format(foo,'.2f'))
+
             ax3.cla()
             ax3.plot(range(100),database2[0],color='blue')
             ax3.set_ylim(0,100)
@@ -188,7 +191,7 @@ def regen():
 
 
 
-        if count % (100 * period) == 0:
+        if count % (120 * period) == 0:
             count = 0
         
         root.update()
@@ -209,20 +212,21 @@ tabControl.pack(expand=1, fill="both")
 tabControl.add(tabAni, text='System Animation')
 tabControl.pack(expand=1, fill="both")
 
-PowerText = StringVar(tabCtl,"0")
-ChargeText = StringVar(tabCtl,"0")
-DischargeText = StringVar(tabCtl,"0")
+PowerText = StringVar(root,"0")
+ChargeText = StringVar(root,"0")
+DischargeText = StringVar(root,"0")
 
 #------------------------- Generate Graphs and Database ------------------#
 d = {'CV':[0,0,0,0,0,0,0,0,0,0],'CI':[0,0,0,0,0,0,0,0,0,0],
     'DV':[0,0,0,0,0,0,0,0,0,0],'DI':[0,0,0,0,0,0,0,0,0,0]}
 database = pd.DataFrame(data= d)
 
-database2 = pd.DataFrame(0, index=range(0,100))
+database2 = pd.DataFrame(0, index=range(0,100),columns=range(1))
 
 fig1,ax1 = plt.subplots()
 fig1.set_size_inches(5,3)
 fig1.set_dpi(60)
+fig1.set_facecolor("#0F0F0F0F")
 ax1.plot(range(10),database['CV'],database['DV'])
 ax1.autoscale(False)
 ax1.set_title("Voltage Measurements")
@@ -231,6 +235,7 @@ ax1.set_ylabel("Voltage [V]")
 fig2,ax2 = plt.subplots()
 fig2.set_size_inches(5,3)
 fig2.set_dpi(60)
+fig2.set_facecolor("#0F0F0F0F")
 ax2.plot(range(10),database['CI'],database['DI'])
 ax2.autoscale(False)
 ax2.set_title("Current Measurements")
@@ -239,11 +244,10 @@ ax2.set_ylabel("Current [A]")
 fig3,ax3 = plt.subplots()
 fig3.set_size_inches(5,3)
 fig3.set_dpi(60)
+fig3.set_facecolor("#0F0F0F0F")
 ax3.plot(range(100),database2[0])
 ax3.set_title("Battery Storage Tracker")
 ax3.set_ylabel("Battery Storage [%]")
-
-#dataFrame = Frame(master=tabDat).grid(row=0,column=0)
 
 canvas1 = FigureCanvasTkAgg(fig1,tabDat)
 canvas1.draw()
@@ -266,32 +270,44 @@ imgArrow = PhotoImage(file='arrow.png',master=root)
 imgArrow = imgArrow.subsample(40,40)
 imgBattery = PhotoImage(file='battery.png',master=root)
 imgBattery = imgBattery.subsample(7,7)
+imgGame = PhotoImage(file='GUI/game.png',master=root)
+imgGame = imgGame.subsample(15,15)
 
 measureFrame = Frame(master=tabDat)
 measureFrame.grid(column=1,row=1)
 
-Label(measureFrame,font=(14), textvariable = PowerText,fg="black").grid(column=1,row=2)
-Label(measureFrame,font=(14), textvariable = ChargeText,fg="black").grid(column=3,row=2)
+Label(measureFrame,font=('Arial',8), textvariable = ChargeText,fg="black").grid(column=1,row=2)
+Label(measureFrame,font=('Arial',8), textvariable = PowerText,fg="black").grid(column=3,row=2)
+Label(measureFrame,font=('Arial',8), textvariable = DischargeText,fg="black").grid(column=5,row=2)
 
-Label(measureFrame,font=(14),text= "Charge-side Power [W]").grid(column=1,row=1)
-Label(measureFrame,font=(14),text= "Battery Charge [%]").grid(column=3,row=1)
+Label(measureFrame,font=('Arial',8),text= "Power In [W]").grid(column=1,row=1)
+Label(measureFrame,font=('Arial',8),text= "Battery Charge [%]").grid(column=3,row=1)
+Label(measureFrame,font=('Arial',8),text= "Power Out [W]").grid(column=5,row=1)
 
 Label(master= measureFrame,image=imgPanel).grid(column = 1, row = 0)
 Label(master= measureFrame,image=imgArrow).grid(column = 2, row = 0)
 Label(master= measureFrame,image=imgBattery).grid(column = 3, row = 0)
-
-dataLong = pd.read_csv("dummyLong.csv")
+Label(master= measureFrame,image=imgArrow).grid(column = 4, row = 0)
+Label(master= measureFrame,image=imgGame).grid(column = 5, row = 0)
 
 # ----------------- Animation Tab ----------------
-ttk.Label(tabAni, text='Here we display our system animation').grid(column=0, row=0, padx=0, pady=10)
+controlFrame = Frame(master=tabAni)
+controlFrame.place(anchor="n",x=400,y=25)
+animFrame = Frame(master=tabAni)
+animFrame.place(anchor='s',x=400,y=350)
 
 # Intialize Frames of Animation as PhotoImages
 framesChar = [PhotoImage(master=tabAni,file='chargeAnim/charge%i.png' %(i)) for i in range(1,7)]
+for i in range(6):
+    framesChar[i] = framesChar[i].subsample(2,2)
+    
 framesDis = [PhotoImage(master=tabAni,file='dischargeAnim/discharge%i.png' %(i)) for i in range(1,6)]
-
+for i in range(5):
+    framesDis[i]= framesDis[i].subsample(2,2)
+    
 #initialize animation photo in cneter of frame
-animation = Label(tabAni,image = None)
-animation.grid(column=1,row=2,pady= 20)
+animation = Label(animFrame,image = None)
+animation.grid(column=0,row=0)
 
 #Cycle through the individual frames of the animation
 def playChar(i):
@@ -301,7 +317,7 @@ def playChar(i):
     if i == 6:
         i = 0
     animation.configure(image=frame)        #push next frame
-    check = root.after(1000,playChar,i)     #iterate after ~1 sec
+    check = root.after(3000,playChar,i)     #iterate after ~1 sec
 
 #Restart Animation frames
 def resetChar():
@@ -320,7 +336,7 @@ def playDis(j):
     if j == 5:
         j = 0
     animation.configure(image=frame)
-    check = root.after(1000,playDis,j) 
+    check = root.after(3000,playDis,j) 
 
 #Restart Animation frames
 def resetDis():
@@ -332,15 +348,15 @@ def resetDis():
     playDis(0)
 
 # Create buttons to reset animations when pressed
-Button(tabAni, text="Restart Charge Animation",command=resetChar).grid(column=0,row=1,padx=30)
-Button(tabAni, text="Restart Discharge Animation",command=resetDis).grid(column=1,row=1)
+Button(controlFrame, text="Restart Charge Animation",command=resetChar).grid(column=0,row=0,padx=30)
+Button(controlFrame, text="Restart Discharge Animation",command=resetDis).grid(column=1,row=0)
 
 # ----------------- Control Tab ----------------
 
 AlphaFrame = Frame(master=tabCtl)
-AlphaFrame.grid(column=0,row=0,padx=60)
+AlphaFrame.place(x=50,y=25)
 BetaFrame = Frame(master=tabCtl)
-BetaFrame.grid(column=1,row=0)
+BetaFrame.place(x=500,y=0)
 
 alpha1 = Frame(master= AlphaFrame)
 alpha1.grid(row=0)
@@ -363,7 +379,7 @@ beta4.grid(row=3)
 
 Label(beta1,text="Please select duration of operation mode:").grid(column = 0, row=0)
 
-Button(beta2,text="5 seconds",height=2,width=10,command=lambda:setDuration(5),).grid(column=0,row=1)
+Button(beta2,text="10 seconds",height=2,width=10,command=lambda:setDuration(5),).grid(column=0,row=1)
 Button(beta2,text="5 minutes",height=2,width=10,command=lambda:setDuration(300)).grid(column=1,row=1)
 Button(beta2,text="10 minutes",height=2,width=10,command= lambda:setDuration(600)).grid(column=2,row=1)
 Button(beta2,text="30 minutes",height=2,width=10,command=lambda:setDuration(1800)).grid(column=0,row=2)
